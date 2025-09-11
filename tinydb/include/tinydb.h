@@ -32,6 +32,20 @@ typedef struct
     uint8_t value[VALUE_SIZE];
 } Record;
 
+typedef struct
+{
+    uint32_t key;
+    long offset; // Byte offset of the Record in the file
+    bool used;   // Whether this slot is used
+} IndexSlot;
+
+typedef struct
+{
+    IndexSlot *slots;
+    size_t capacity; // Power of two, eg: 1024, 2048, 4096...
+    size_t size;
+} Index;
+
 TdbStatus tinydb_new(const char *path, TinyDb **out);
 
 TdbStatus tinydb_close(TinyDb *db);

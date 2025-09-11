@@ -3,9 +3,101 @@
 #include <stdbool.h>
 #include <string.h>
 
+static inline uint32_t hash_key(uint32_t key)
+{
+  return key * 2654435761u; // Knuth's multiplicative hash
+}
+
+static bool index_init(Index *index, size_t capacity)
+{
+  if (!index)
+    return false;
+
+  size_t p = 1;
+  while (p < capacity)
+    p <<= 1;
+  index->capacity = p;
+  index->size = 0;
+  index->slots = calloc(p, sizeof(IndexSlot));
+  return index->slots != NULL;
+}
+
+static bool index_free(Index *index)
+{
+  if (!index)
+    return false;
+  free(index->slots);
+  index->slots = NULL;
+  index->capacity = 0;
+  index->size = 0;
+  return true;
+}
+
+static bool index_get(const Index *index, uint32_t key, long *out_offset)
+{
+  if (!index || !index->slots || !out_offset)
+    return false;
+
+  size_t mask = index->capacity - 1;
+  size_t i = (size_t)hash_key(key) & mask;
+
+  for (size_t n = 0; n < index->capacity; n++)
+  {
+    const IndexSlot *slot = &index->slots[i];
+    if (!slot->used)
+    {
+      return false;
+    }
+    if (slot->key == key)
+    {
+      if (out_offset)
+      {
+        *out_offset = slot->offset;
+      }
+      return true;
+    }
+    i = (i + 1) & mask; // Linear probing
+  }
+  return false;
+}
+
+static bool index_put(Index *index, uint32_t key, long offset)
+{
+  if (!index || !index->slots)
+    return false;
+
+  size_t mask = index->capacity - 1;
+  size_t i = (size_t)hash_key(key) & mask;
+
+  for (size_t n = 0; n < index->capacity; n++)
+  {
+    IndexSlot *slot = &index->slots[i];
+
+    if (!slot->used)
+    {
+      slot->key = key;
+      slot->offset = offset;
+      slot->used = true;
+      index->size++;
+      return true;
+    }
+
+    if (slot->key == key)
+    {
+      slot->offset = offset; // Update existing key
+      return true;
+    }
+
+    i = (i + 1) & mask; // Linear probing
+  }
+
+  return false; // Index full
+}
+
 struct TinyDb
 {
   FILE *fp;
+  Index index;
 };
 
 TdbStatus tinydb_new(const char *path, TinyDb **out)
@@ -56,6 +148,47 @@ TdbStatus tinydb_new(const char *path, TinyDb **out)
     return TDB_ERR_ALLOCATION;
   }
 
+  if (!index_init(&db->index, 1024))
+  {
+    fclose(fp);
+    free(db);
+    return TDB_ERR_ALLOCATION;
+  }
+
+  if (fseek(fp, sizeof(DbHeader), SEEK_SET) != 0)
+  {
+    index_free(&db->index);
+    fclose(fp);
+    free(db);
+    return TDB_ERR_IO;
+  }
+
+  Record record;
+  while (1)
+  {
+    long position = ftell(fp);
+    if (position < 0)
+    {
+      index_free(&db->index);
+      fclose(fp);
+      free(db);
+      return TDB_ERR_IO;
+    }
+
+    if (fread(&record, sizeof(record), 1, fp) != 1)
+    {
+      break; // EOF or read error
+    }
+
+    if (!index_put(&db->index, record.key, position))
+    {
+      index_free(&db->index);
+      fclose(fp);
+      free(db);
+      return TDB_ERR_FULL;
+    }
+  }
+
   db->fp = fp;
   *out = db;
 
@@ -66,6 +199,8 @@ TdbStatus tinydb_close(TinyDb *db)
 {
   if (!db)
     return TDB_ERR_INVALID;
+
+  index_free(&db->index);
 
   if (fclose(db->fp) != 0)
   {
@@ -91,6 +226,10 @@ TdbStatus tinydb_put(TinyDb *db, uint32_t key, const uint8_t *value)
   if (fseek(db->fp, 0, SEEK_END) != 0)
     return TDB_ERR_IO;
 
+  long position = ftell(db->fp);
+  if (position < 0)
+    return TDB_ERR_IO;
+
   if (fwrite(&record, sizeof(record), 1, db->fp) != 1)
     return TDB_ERR_IO;
 
@@ -99,30 +238,26 @@ TdbStatus tinydb_put(TinyDb *db, uint32_t key, const uint8_t *value)
     return TDB_ERR_IO;
   }
 
+  if (!index_put(&db->index, key, position))
+    return TDB_ERR_FULL;
+
   return TDB_OK;
 }
 
-// Linear search implementation
 TdbStatus tinydb_get(TinyDb *db, uint32_t key, Record *out)
 {
   if (!db || !db->fp || !out)
     return TDB_ERR_INVALID;
 
-  if (fseek(db->fp, sizeof(DbHeader), SEEK_SET) != 0)
+  long position;
+  if (!index_get(&db->index, key, &position))
+    return TDB_ERR_NOT_FOUND;
+
+  if (fseek(db->fp, position, SEEK_SET) != 0)
     return TDB_ERR_IO;
 
-  bool found = false;
-  Record r;
+  if (fread(out, sizeof(Record), 1, db->fp) != 1)
+    return TDB_ERR_IO;
 
-  while (fread(&r, sizeof r, 1, db->fp) == 1)
-  {
-    if (r.key == key)
-    {
-      *out = r;
-      found = true;
-      // No break to find the last occurrence
-    }
-  }
-
-  return found ? TDB_OK : TDB_ERR_NOT_FOUND;
+  return TDB_OK;
 }
