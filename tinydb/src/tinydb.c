@@ -3,6 +3,12 @@
 #include <stdbool.h>
 #include <string.h>
 
+struct TinyDb
+{
+  FILE *fp;
+  Index index;
+};
+
 static inline uint32_t hash_key(uint32_t key)
 {
   return key * 2654435761u; // Knuth's multiplicative hash
@@ -22,20 +28,19 @@ static bool index_init(Index *index, size_t capacity)
   return index->slots != NULL;
 }
 
-static bool index_free(Index *index)
+static void index_free(Index *index)
 {
   if (!index)
-    return false;
+    return;
   free(index->slots);
   index->slots = NULL;
   index->capacity = 0;
   index->size = 0;
-  return true;
 }
 
 static bool index_get(const Index *index, uint32_t key, long *out_offset)
 {
-  if (!index || !index->slots || !out_offset)
+  if (!index || !index->slots)
     return false;
 
   size_t mask = index->capacity - 1;
@@ -93,12 +98,6 @@ static bool index_put(Index *index, uint32_t key, long offset)
 
   return false; // Index full
 }
-
-struct TinyDb
-{
-  FILE *fp;
-  Index index;
-};
 
 TdbStatus tinydb_new(const char *path, TinyDb **out)
 {
@@ -177,7 +176,14 @@ TdbStatus tinydb_new(const char *path, TinyDb **out)
 
     if (fread(&record, sizeof(record), 1, fp) != 1)
     {
-      break; // EOF or read error
+      if (feof(fp))
+        break;
+
+      // Error
+      index_free(&db->index);
+      fclose(fp);
+      free(db);
+      return TDB_ERR_IO;
     }
 
     if (!index_put(&db->index, record.key, position))
