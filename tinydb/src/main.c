@@ -1,76 +1,126 @@
 #include "tinydb.h"
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
 
-static const char *st(TdbStatus s)
+static const char *skip_spaces(const char *s)
 {
-    switch (s)
+    while (*s == ' ' || *s == '\t')
     {
-    case TDB_OK:
-        return "OK";
-    case TDB_ERR_IO:
-        return "IO";
-    case TDB_ERR_NOT_FOUND:
-        return "NOT_FOUND";
-    case TDB_ERR_FULL:
-        return "FULL";
-    case TDB_ERR_INVALID:
-        return "INVALID";
-    case TDB_ERR_ALLOCATION:
-        return "ALLOCATION";
-    default:
-        return "UNKNOWN";
+        s++;
     }
+    return s;
+}
+
+static bool is_cmd(const char *line, const char *cmd, const char **out_args)
+{
+    size_t n = strlen(cmd);
+    if (strncmp(line, cmd, n) != 0)
+        return false;
+    const char *p = line + n;
+    if (*p != '\0' && *p != ' ' && *p != '\t')
+        return false;
+    *out_args = skip_spaces(p);
+    return true;
 }
 
 int main(void)
 {
     TinyDb *db = NULL;
-    TdbStatus s = tinydb_new("data.tdb", &db);
-    if (s != TDB_OK)
+    if (tinydb_new("data.tdb", &db) != TDB_OK)
     {
-        printf("open: %s\n", st(s));
+        fprintf(stderr, "Failed to open database\n");
         return 1;
     }
 
-    // Put a couple of records (note: we treat value as bytes, but pass C-strings)
-    s = tinydb_put(db, 1, (const uint8_t *)"Alice");
-    printf("put(1,'Alice'): %s\n", st(s));
-    s = tinydb_put(db, 2, (const uint8_t *)"Bob");
-    printf("put(2,'Bob'):   %s\n", st(s));
-    s = tinydb_put(db, 1, (const uint8_t *)"Alice v2");
-    printf("put(1,'Alice v2'): %s\n", st(s));
+    char line[256];
+    printf("TinyDB shell. Type 'exit' to quit.\n");
 
-    // Get key=1 (last write wins)
-    Record r;
-    s = tinydb_get(db, 1, &r);
-    if (s == TDB_OK)
+    for (;;)
     {
-        printf("get(1): key=%u value=%s\n", r.key, (const char *)r.value);
+        printf("> ");
+        if (!fgets(line, sizeof(line), stdin))
+        {
+            break;
+        }
+
+        line[strcspn(line, "\n")] = 0;
+        const char *args = NULL;
+
+        if (is_cmd(line, "exit", &args))
+        {
+            break;
+        }
+        else if (is_cmd(line, "set", &args))
+        {
+            args = skip_spaces(args);
+            uint32_t key = 0;
+            char *endptr = NULL;
+            key = (uint32_t)strtoul(args, &endptr, 10);
+            if (endptr == args) // No number was parsed
+            {
+                printf("Usage: set <key> <value>\n");
+                continue;
+            }
+
+            const char *valstart = skip_spaces(endptr);
+            if (*valstart == '\0')
+            {
+                printf("Usage: set <key> <value>\n");
+                continue;
+            }
+
+            uint8_t value[VALUE_SIZE];
+            memset(value, 0, VALUE_SIZE);
+            strncpy((char *)value, valstart, VALUE_SIZE - 1); // Keep last byte zero
+            TdbStatus status = tinydb_set(db, key, value);
+            if (status == TDB_OK)
+            {
+                printf("OK\n");
+            }
+            else
+            {
+                printf("ERROR\n");
+            }
+        }
+        else if (is_cmd(line, "get", &args))
+        {
+            args = skip_spaces(args);
+            uint32_t key = 0;
+            char *endptr = NULL;
+            key = (uint32_t)strtoul(args, &endptr, 10);
+            if (endptr == args)
+            {
+                printf("Usage: get <key>\n");
+                continue;
+            }
+
+            Record record;
+            TdbStatus status = tinydb_get(db, key, &record);
+            if (status == TDB_OK)
+            {
+                printf("%s\n", record.value);
+            }
+            else if (status == TDB_ERR_NOT_FOUND)
+            {
+                printf("NOT FOUND\n");
+            }
+            else
+            {
+                printf("ERROR\n");
+            }
+        }
+        else if (*line == '\0')
+        {
+            continue; // Ignore empty lines
+        }
+        else
+        {
+            printf("Unknown command. Available commands: set, get, exit\n");
+        }
     }
-    else
-    {
-        printf("get(1): %s\n", st(s));
-    }
 
-    // Get missing key
-    s = tinydb_get(db, 999, &r);
-    printf("get(999): %s\n", st(s));
-
-    // Overwrite again and read back
-    s = tinydb_put(db, 1, (const uint8_t *)"Alice v3");
-    printf("put(1,'Alice v3'): %s\n", st(s));
-
-    s = tinydb_get(db, 1, &r);
-    if (s == TDB_OK)
-    {
-        printf("get(1): key=%u value=%s\n", r.key, (const char *)r.value);
-    }
-
-    // Close
-    s = tinydb_close(db);
-    printf("close: %s\n", st(s));
     return 0;
 }

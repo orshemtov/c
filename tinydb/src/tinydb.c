@@ -66,7 +66,7 @@ static bool index_get(const Index *index, uint32_t key, long *out_offset)
   return false;
 }
 
-static bool index_put(Index *index, uint32_t key, long offset)
+static bool index_set(Index *index, uint32_t key, long offset)
 {
   if (!index || !index->slots)
     return false;
@@ -186,7 +186,7 @@ TdbStatus tinydb_new(const char *path, TinyDb **out)
       return TDB_ERR_IO;
     }
 
-    if (!index_put(&db->index, record.key, position))
+    if (!index_set(&db->index, record.key, position))
     {
       index_free(&db->index);
       fclose(fp);
@@ -219,7 +219,7 @@ TdbStatus tinydb_close(TinyDb *db)
   return TDB_OK;
 }
 
-TdbStatus tinydb_put(TinyDb *db, uint32_t key, const uint8_t *value)
+TdbStatus tinydb_set(TinyDb *db, uint32_t key, const uint8_t *value)
 {
   if (!db || !db->fp || !value)
     return TDB_ERR_INVALID;
@@ -244,7 +244,7 @@ TdbStatus tinydb_put(TinyDb *db, uint32_t key, const uint8_t *value)
     return TDB_ERR_IO;
   }
 
-  if (!index_put(&db->index, key, position))
+  if (!index_set(&db->index, key, position))
     return TDB_ERR_FULL;
 
   return TDB_OK;

@@ -50,6 +50,6 @@ TdbStatus tinydb_new(const char *path, TinyDb **out);
 
 TdbStatus tinydb_close(TinyDb *db);
 
-TdbStatus tinydb_put(TinyDb *db, uint32_t key, const uint8_t *value);
+TdbStatus tinydb_set(TinyDb *db, uint32_t key, const uint8_t *value);
 
 TdbStatus tinydb_get(TinyDb *db, uint32_t key, Record *out);
