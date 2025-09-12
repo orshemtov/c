@@ -112,6 +112,32 @@ int main(void)
                 printf("ERROR\n");
             }
         }
+        else if (is_cmd(line, "delete", &args))
+        {
+            args = skip_spaces(args);
+            uint32_t key = 0;
+            char *endptr = NULL;
+            key = (uint32_t)strtoul(args, &endptr, 10);
+            if (endptr == args) // No number was parsed
+            {
+                printf("Usage: delete <key>\n");
+                continue;
+            }
+
+            TdbStatus status = tinydb_delete(db, key);
+            if (status == TDB_OK)
+            {
+                printf("OK\n");
+            }
+            else if (status == TDB_ERR_NOT_FOUND)
+            {
+                printf("NOT FOUND\n");
+            }
+            else
+            {
+                printf("ERROR\n");
+            }
+        }
         else if (*line == '\0')
         {
             continue; // Ignore empty lines

@@ -3,17 +3,27 @@
 #include <stdbool.h>
 #include <string.h>
 
+/**
+ * Database opaque structure.
+ */
 struct TinyDb
 {
   FILE *fp;
   Index index;
 };
 
+/**
+ * A simple hash function for uint32_t keys.
+ */
 static inline uint32_t hash_key(uint32_t key)
 {
   return key * 2654435761u; // Knuth's multiplicative hash
 }
 
+/**
+ * Initializes the index with a given capacity (rounded up to the next power of two).
+ * Returns true on success, false on allocation failure.
+ */
 static bool index_init(Index *index, size_t capacity)
 {
   if (!index)
@@ -38,6 +48,10 @@ static void index_free(Index *index)
   index->size = 0;
 }
 
+/**
+ * Retrieves the offset for a key.
+ * Returns true if found, false otherwise.
+ */
 static bool index_get(const Index *index, uint32_t key, long *out_offset)
 {
   if (!index || !index->slots)
@@ -66,6 +80,10 @@ static bool index_get(const Index *index, uint32_t key, long *out_offset)
   return false;
 }
 
+/**
+ * Inserts or updates a key in the index.
+ * Returns false if the index is full.
+ */
 static bool index_set(Index *index, uint32_t key, long offset)
 {
   if (!index || !index->slots)
@@ -99,6 +117,11 @@ static bool index_set(Index *index, uint32_t key, long offset)
   return false; // Index full
 }
 
+/**
+ * Opens or creates a TinyDB database file.
+ * On creation, writes the header.
+ * On open, validates the header and loads the index into memory.
+ */
 TdbStatus tinydb_new(const char *path, TinyDb **out)
 {
   DbHeader header = {MAGIC, VERSION};
@@ -201,6 +224,9 @@ TdbStatus tinydb_new(const char *path, TinyDb **out)
   return TDB_OK;
 }
 
+/**
+ * Closes the database and frees resources.
+ */
 TdbStatus tinydb_close(TinyDb *db)
 {
   if (!db)
@@ -219,6 +245,9 @@ TdbStatus tinydb_close(TinyDb *db)
   return TDB_OK;
 }
 
+/**
+ * Inserts or updates a record by appending to the file.
+ */
 TdbStatus tinydb_set(TinyDb *db, uint32_t key, const uint8_t *value)
 {
   if (!db || !db->fp || !value)
@@ -226,8 +255,9 @@ TdbStatus tinydb_set(TinyDb *db, uint32_t key, const uint8_t *value)
 
   Record record;
   record.key = key;
+  record.deleted = 0;
   memset(record.value, 0, VALUE_SIZE);
-  memcpy(record.value, value, VALUE_SIZE * sizeof(uint8_t));
+  memcpy(record.value, value, VALUE_SIZE); // sizeof(uint8_t) is 1
 
   if (fseek(db->fp, 0, SEEK_END) != 0)
     return TDB_ERR_IO;
@@ -250,6 +280,10 @@ TdbStatus tinydb_set(TinyDb *db, uint32_t key, const uint8_t *value)
   return TDB_OK;
 }
 
+/**
+ * Retrieves a record by key.
+ * If the record is marked as deleted, returns `TDB_ERR_NOT_FOUND`.
+ */
 TdbStatus tinydb_get(TinyDb *db, uint32_t key, Record *out)
 {
   if (!db || !db->fp || !out)
@@ -264,6 +298,45 @@ TdbStatus tinydb_get(TinyDb *db, uint32_t key, Record *out)
 
   if (fread(out, sizeof(Record), 1, db->fp) != 1)
     return TDB_ERR_IO;
+
+  if (out->deleted == 1)
+  {
+    return TDB_ERR_NOT_FOUND;
+  }
+
+  return TDB_OK;
+}
+
+/**
+ * Deletes a record by appending a tombstone record.
+ */
+TdbStatus tinydb_delete(TinyDb *db, uint32_t key)
+{
+  if (!db || !db->fp)
+    return TDB_ERR_INVALID;
+
+  Record record;
+  record.key = key;
+  record.deleted = 1;
+  memset(record.value, 0, VALUE_SIZE);
+
+  if (fseek(db->fp, 0, SEEK_END) != 0)
+    return TDB_ERR_IO;
+
+  long position = ftell(db->fp);
+  if (position < 0)
+    return TDB_ERR_IO;
+
+  if (fwrite(&record, sizeof(record), 1, db->fp) != 1)
+    return TDB_ERR_IO;
+
+  if (fflush(db->fp) != 0)
+  {
+    return TDB_ERR_IO;
+  }
+
+  if (!index_set(&db->index, key, position))
+    return TDB_ERR_FULL;
 
   return TDB_OK;
 }

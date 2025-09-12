@@ -30,6 +30,7 @@ typedef struct
 {
     uint32_t key;
     uint8_t value[VALUE_SIZE];
+    uint8_t deleted; // 0 = active, 1 = deleted
 } Record;
 
 typedef struct
@@ -53,3 +54,5 @@ TdbStatus tinydb_close(TinyDb *db);
 TdbStatus tinydb_set(TinyDb *db, uint32_t key, const uint8_t *value);
 
 TdbStatus tinydb_get(TinyDb *db, uint32_t key, Record *out);
+
+TdbStatus tinydb_delete(TinyDb *db, uint32_t key);
