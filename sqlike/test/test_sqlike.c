@@ -193,7 +193,7 @@ void test_select_all_null_table(void)
 {
     TEST_ASSERT_EQUAL(SQLK_OK, sqlk_open(TEST_DB_PATH, &db));
     TEST_ASSERT_NOT_NULL(db);
-    
+
     TEST_ASSERT_EQUAL(SQLK_ERROR, sqlk_select_all(db, NULL));
 }
 
@@ -201,7 +201,7 @@ void test_select_all_table_not_found(void)
 {
     TEST_ASSERT_EQUAL(SQLK_OK, sqlk_open(TEST_DB_PATH, &db));
     TEST_ASSERT_NOT_NULL(db);
-    
+
     TEST_ASSERT_EQUAL(SQLK_ERROR, sqlk_select_all(db, "nonexistent"));
 }
 
