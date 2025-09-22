@@ -189,15 +189,15 @@ sqlk_status_t sqlk_create_table(sqlk_db_t *db, const char *name)
     if (fread(&header, sizeof(sqlk_header_t), 1, db->fp) != 1)
         return SQLK_ERROR;
 
-    if (header.table_count >= MAX_TABLES)
+    if (header.table_count >= SQLK_MAX_TABLES)
         return SQLK_ERROR;
 
     uint32_t pgno = header.page_count;
     header.page_count++;
 
     sqlk_table_t *table = &header.tables[header.table_count];
-    strncpy(table->name, name, MAX_NAME_LEN - 1);
-    table->name[MAX_NAME_LEN - 1] = '\0';
+    strncpy(table->name, name, SQLK_MAX_NAME_LEN - 1);
+    table->name[SQLK_MAX_NAME_LEN - 1] = '\0';
     table->root_pgno = pgno;
     header.table_count++;
 
@@ -240,7 +240,7 @@ sqlk_status_t sqlk_insert_row(sqlk_db_t *db, const char *table, const sqlk_row_t
     uint32_t root_pgno = 0;
     for (uint32_t i = 0; i < header.table_count; i++)
     {
-        if (strncmp(header.tables[i].name, table, MAX_NAME_LEN) == 0)
+        if (strncmp(header.tables[i].name, table, SQLK_MAX_NAME_LEN) == 0)
         {
             root_pgno = header.tables[i].root_pgno;
             break;
@@ -297,7 +297,7 @@ sqlk_status_t sqlk_select_all(sqlk_db_t *db, const char *table)
     uint32_t root_pgno = 0;
     for (uint32_t i = 0; i < header.table_count; i++)
     {
-        if (strncmp(header.tables[i].name, table, MAX_NAME_LEN) == 0)
+        if (strncmp(header.tables[i].name, table, SQLK_MAX_NAME_LEN) == 0)
         {
             root_pgno = header.tables[i].root_pgno;
             break;
@@ -327,4 +327,49 @@ sqlk_status_t sqlk_select_all(sqlk_db_t *db, const char *table)
     }
 
     return SQLK_OK;
+}
+
+void sqlk_leaf_init(sqlk_page_t *page)
+{
+    if (!page)
+        return;
+    memset(page->data, 0, SQLK_PAGE_SIZE);
+
+    sqlk_leaf_header_t *header = (sqlk_leaf_header_t *)page->data;
+    header->type = SQLK_PAGE_BTREE_LEAF;
+    header->nkeys = 0;
+    header->next_leaf = 0;
+    header->free_start = sizeof(sqlk_leaf_header_t);
+    header->free_end = SQLK_PAGE_SIZE;
+}
+
+// Returns slot index or -1 on error
+int sqlk_leaf_insert_record(sqlk_page_t *page, const void *record, uint16_t size)
+{
+    if (!page || !record || size == 0)
+        return -1;
+
+    sqlk_leaf_header_t *header = (sqlk_leaf_header_t *)page->data;
+    if (header->type != SQLK_PAGE_BTREE_LEAF)
+        return -1;
+
+    uint16_t record_bytes = (uint16_t)(2 + size);
+    uint16_t need = (uint16_t)(record_bytes + sizeof(sqlk_slot_t));
+    if ((uint32_t)header->free_start + need > (uint32_t)header->free_end)
+        return -1; // Not enough space
+
+    uint16_t offset = header->free_start;
+    memcpy(page->data + offset, &size, 2);
+    memcpy(page->data + offset + 2, record, size);
+    header->free_start = (uint16_t)(header->free_start + record_bytes);
+
+    // Update free_end to make space for the new slot
+    header->free_end = (uint16_t)(header->free_end - sizeof(sqlk_slot_t));
+    sqlk_slot_t *slot = (sqlk_slot_t *)(page->data + header->free_end);
+    slot->offset = offset;
+
+    int idx = header->nkeys;
+    header->nkeys = (uint16_t)(header->nkeys + 1);
+
+    return idx;
 }
