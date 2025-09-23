@@ -21,17 +21,15 @@ typedef struct sqlk_db_t sqlk_db_t;
 
 typedef enum
 {
-    SQLK_PAGE_BTREE_LEAF = 1;
-    SQLK_PAGE_BTREE_INTERNAL = 2;
-}
-sqlk_page_type_t;
+    SQLK_PAGE_BTREE_LEAF = 1,
+    SQLK_PAGE_BTREE_INTERNAL = 2
+} sqlk_page_type_t;
 
 typedef enum
 {
     SQLK_COL_INT32 = 1,
-    SQLK_COL_TEXT = 2;
-}
-sqlk_col_type_t;
+    SQLK_COL_TEXT = 2
+} sqlk_col_type_t;
 
 typedef struct
 {
