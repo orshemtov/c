@@ -91,7 +91,7 @@ void create_order(portfolio_t *portfolio, order_t order)
             float order_cost = order.quantity * order.price;
             log_debug("create_order: order cost=%.2f, updating cash from %.2f to %.2f", order_cost, portfolio->cash,
                       portfolio->cash - order_cost);
-            portfolio->cash -= order_cost;  // Negative quantity (sell) will add cash back
+            portfolio->cash -= order_cost; // Negative quantity (sell) will add cash back
             break;
         }
     }
@@ -119,7 +119,7 @@ void create_order(portfolio_t *portfolio, order_t order)
         float order_cost = order.quantity * order.price;
         log_debug("create_order: order cost=%.2f, updating cash from %.2f to %.2f", order_cost, portfolio->cash,
                   portfolio->cash - order_cost);
-        portfolio->cash -= order_cost;  // Negative quantity (sell) will add cash back
+        portfolio->cash -= order_cost; // Negative quantity (sell) will add cash back
 
         portfolio->position_count++;
         log_debug("create_order: portfolio position_count increased to %d", portfolio->position_count);
@@ -132,43 +132,43 @@ void create_order(portfolio_t *portfolio, order_t order)
 double get_quote(const char *symbol)
 {
     log_debug("get_quote: called with symbol=%s", symbol);
-    
+
     if (symbol == NULL)
     {
         log_warn("get_quote: symbol is NULL, returning 0.0");
         return 0.0;
     }
-    
+
     // Mock quotes for the symbols we use in main.c
     // In the future, this could use cURL to fetch real market data from APIs like Yahoo Finance, Alpha Vantage, etc.
     double quote = 0.0;
-    
+
     if (strcmp(symbol, "VOO") == 0)
     {
-        quote = 614.76;  // Vanguard S&P 500 ETF - current market price
+        quote = 614.76; // Vanguard S&P 500 ETF - current market price
     }
     else if (strcmp(symbol, "VGLT") == 0)
     {
-        quote = 56.50;   // Vanguard Long-Term Treasury ETF - current market price
+        quote = 56.50; // Vanguard Long-Term Treasury ETF - current market price
     }
     else if (strcmp(symbol, "VGIT") == 0)
     {
-        quote = 60.06;   // Vanguard Intermediate-Term Treasury ETF - current market price
+        quote = 60.06; // Vanguard Intermediate-Term Treasury ETF - current market price
     }
     else if (strcmp(symbol, "GLD") == 0)
     {
-        quote = 345.05;  // SPDR Gold Trust - current market price
+        quote = 345.05; // SPDR Gold Trust - current market price
     }
     else if (strcmp(symbol, "DBC") == 0)
     {
-        quote = 22.26;   // Invesco DB Commodity Index - current market price
+        quote = 22.26; // Invesco DB Commodity Index - current market price
     }
     else
     {
         log_warn("get_quote: unknown symbol %s, returning default price of 100.00", symbol);
-        quote = 100.00;  // Default fallback price
+        quote = 100.00; // Default fallback price
     }
-    
+
     log_debug("get_quote: returning quote %.2f for symbol %s", quote, symbol);
     return quote;
 }
@@ -213,7 +213,8 @@ void rebalance_portfolio(portfolio_t *portfolio, allocation_t *allocations, int 
                 {
                     // Buy more
                     int quantity_to_buy = (int)(difference / position->underlying.price);
-                    log_info("rebalance_portfolio: need to buy %d shares of %s", quantity_to_buy, allocations[i].symbol);
+                    log_info("rebalance_portfolio: need to buy %d shares of %s", quantity_to_buy,
+                             allocations[i].symbol);
 
                     order_t order = {.symbol = {0}, .quantity = quantity_to_buy, .price = position->underlying.price};
                     strncpy(order.symbol, position->underlying.symbol, 5);
@@ -225,12 +226,14 @@ void rebalance_portfolio(portfolio_t *portfolio, allocation_t *allocations, int 
                     int quantity_to_sell = (int)(-difference / position->underlying.price);
                     if (quantity_to_sell > position->quantity)
                     {
-                        log_warn("rebalance_portfolio: capping sell quantity from %d to %d (can't sell more than owned)",
-                               quantity_to_sell, position->quantity);
+                        log_warn(
+                            "rebalance_portfolio: capping sell quantity from %d to %d (can't sell more than owned)",
+                            quantity_to_sell, position->quantity);
                         quantity_to_sell = position->quantity; // Can't sell more than we have
                     }
 
-                    log_info("rebalance_portfolio: need to sell %d shares of %s", quantity_to_sell, allocations[i].symbol);
+                    log_info("rebalance_portfolio: need to sell %d shares of %s", quantity_to_sell,
+                             allocations[i].symbol);
 
                     order_t order = {.symbol = {0}, .quantity = -quantity_to_sell, .price = position->underlying.price};
                     strncpy(order.symbol, position->underlying.symbol, 5);
@@ -243,22 +246,22 @@ void rebalance_portfolio(portfolio_t *portfolio, allocation_t *allocations, int 
                 break;
             }
         }
-        
+
         // If no existing position found, create a new position with target allocation
         if (!position_found)
         {
             log_debug("rebalance_portfolio: no existing position for %s, creating new position", allocations[i].symbol);
-            
+
             float target_value = portfolio->equity * allocations[i].target_pct;
             // Get current market price for the symbol
             double current_price = get_quote(allocations[i].symbol);
             int quantity_to_buy = (int)(target_value / current_price);
-            
+
             if (quantity_to_buy > 0)
             {
-                log_info("rebalance_portfolio: creating new position - buying %d shares of %s at $%.2f", 
+                log_info("rebalance_portfolio: creating new position - buying %d shares of %s at $%.2f",
                          quantity_to_buy, allocations[i].symbol, current_price);
-                
+
                 order_t order = {.symbol = {0}, .quantity = quantity_to_buy, .price = current_price};
                 strncpy(order.symbol, allocations[i].symbol, 5);
                 create_order(portfolio, order);
