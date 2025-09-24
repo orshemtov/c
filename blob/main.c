@@ -1,23 +1,20 @@
+#include "queue.h"
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-int main(void)
+int main()
 {
-    const char *first_name = "John";
-    const char *last_name = "Doe";
+    Queue *q = create_queue();
 
-    // concat
-    char *name = malloc(strlen(first_name) + strlen(last_name) + 1 + 1);
+    enqueue(q, (void *)(intptr_t)10);
+    enqueue(q, (void *)(intptr_t)20);
 
-    strcpy(name, first_name);
-    strcat(name, " ");
-    strcat(name, last_name);
-    name[strlen(name)] = '\0';
+    printf("Dequeued: %d\n", (int)(intptr_t)dequeue(q));
+    printf("Dequeued: %d\n", (int)(intptr_t)dequeue(q));
 
-    printf("Full name: %s\n", name);
+    free_queue(q);
 
-    free(name);
-
-    return 0;
+    return EXIT_SUCCESS;
 }
