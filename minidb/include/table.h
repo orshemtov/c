@@ -17,14 +17,6 @@ typedef struct
     MDBSlotID slot;
 } MDBTupleID;
 
-typedef uint64_t MDBRowID;
-
-typedef struct
-{
-    const char* name;
-    MDBColumnType type;
-} MDBColumnDef;
-
 /**
  * Create a new table in the database.
  *
@@ -113,6 +105,38 @@ ErrorCode mdb_table_insert(MDBTable* table, const MDBValue* cols, uint16_t ncols
  */
 ErrorCode mdb_table_get(MDBTable* table, MDBTupleID tuple_id, MDBValue* out_cols, uint16_t max_cols,
                         uint16_t* out_ncols);
+
+/**
+ * Delete a row from the table by its table ID.
+ *
+ * @param table Pointer to the MDBTable instance.
+ * @param tuple_id Tuple ID of the row to delete.
+ *
+ * @return ErrorCode indicating success or failure.
+ */
+ErrorCode mdb_table_delete(MDBTable* table, MDBTupleID tuple_id);
+
+/**
+ * Update a row in the table by its table ID.
+ *
+ * @param table Pointer to the MDBTable instance.
+ * @param tuple_id Tuple ID of the row to update.
+ * @param cols Array of new column values for the row.
+ * @param ncols Number of columns in the new row.
+ *
+ * @return ErrorCode indicating success or failure.
+ */
+ErrorCode mdb_table_update(MDBTable* table, MDBTupleID tuple_id, const MDBValue* cols, uint16_t ncols);
+
+/**
+ * Drops a table from the database.
+ *
+ * @param db Pointer to the MiniDB instance.
+ * @param table_name Name of the table to drop.
+ *
+ * @return ErrorCode indicating success or failure.
+ */
+ErrorCode mdb_table_drop(MiniDB* db, const char* table_name);
 
 /**
  * Open a scan iterator for the table to iterate over all rows.

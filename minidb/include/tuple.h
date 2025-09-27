@@ -1,17 +1,11 @@
 #ifndef TUPLE_H
 #define TUPLE_H
 
+#include "db.h"
 #include <stdbool.h>
 #include <stdint.h>
 
 #define MDB_TEXT_MAX UINT16_MAX
-
-typedef enum
-{
-    COL_TYPE_INVALID = 0,
-    COL_TYPE_INT = 1,
-    COL_TYPE_TEXT = 2,
-} MDBColumnType;
 
 typedef struct
 {

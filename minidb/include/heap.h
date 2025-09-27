@@ -1,13 +1,31 @@
 #ifndef HEAP_H
 #define HEAP_H
 
+#include "db.h"
 #include "errors.h"
 #include "pages.h"
+
+#define MDB_SLOT_DELETED 0xFFFFu
 
 typedef struct
 {
     MDBSlotID next_slot;
 } MDBHeapIter;
+
+typedef struct
+{
+    MDBPageType type;
+    uint32_t table_id;
+    uint16_t n_slots;
+    uint16_t free_start;
+    uint16_t free_end;
+} MDBHeapHeader;
+
+typedef struct
+{
+    uint16_t offset;
+    uint16_t size;
+} MDBSlot;
 
 /**
  * Zero out all bytes in the page.

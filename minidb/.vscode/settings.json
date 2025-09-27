@@ -2,6 +2,9 @@
     "files.associations": {
         "stdio.h": "c",
         "stdlib.h": "c",
-        "unity.h": "c"
+        "unity.h": "c",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "chrono": "cpp"
     }
 }
