@@ -1,9 +1,9 @@
 #include "sqlike.h"
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
 
 struct sqlk_db_t
 {
@@ -60,8 +60,7 @@ sqlk_status_t sqlk_open(const char *path, sqlk_db_t **out_db)
             fclose(fp);
             return SQLK_ERROR;
         }
-        if (memcmp(header.magic, MAGIC, sizeof(MAGIC)) != 0 ||
-            header.version != SQLK_VERSION ||
+        if (memcmp(header.magic, MAGIC, sizeof(MAGIC)) != 0 || header.version != SQLK_VERSION ||
             header.page_size != SQLK_PAGE_SIZE)
         {
             fclose(fp);
@@ -105,8 +104,7 @@ sqlk_status_t sqlk_alloc_page(sqlk_db_t *db, uint32_t *out_pgno)
     }
 
     long size = ftell(db->fp);
-    if (size < 0)
-        return SQLK_ERROR;
+    if (size < 0) return SQLK_ERROR;
 
     if (size % SQLK_PAGE_SIZE != 0)
     {
@@ -184,13 +182,10 @@ sqlk_status_t sqlk_create_table(sqlk_db_t *db, const char *name)
     }
 
     sqlk_header_t header;
-    if (fseek(db->fp, 0, SEEK_SET) != 0)
-        return SQLK_ERROR;
-    if (fread(&header, sizeof(sqlk_header_t), 1, db->fp) != 1)
-        return SQLK_ERROR;
+    if (fseek(db->fp, 0, SEEK_SET) != 0) return SQLK_ERROR;
+    if (fread(&header, sizeof(sqlk_header_t), 1, db->fp) != 1) return SQLK_ERROR;
 
-    if (header.table_count >= SQLK_MAX_TABLES)
-        return SQLK_ERROR;
+    if (header.table_count >= SQLK_MAX_TABLES) return SQLK_ERROR;
 
     uint32_t pgno = header.page_count;
     header.page_count++;
@@ -201,24 +196,18 @@ sqlk_status_t sqlk_create_table(sqlk_db_t *db, const char *name)
     table->root_pgno = pgno;
     header.table_count++;
 
-    if (fseek(db->fp, 0, SEEK_SET) != 0)
-        return SQLK_ERROR;
-    if (fwrite(&header, sizeof(sqlk_header_t), 1, db->fp) != 1)
-        return SQLK_ERROR;
-    if (fflush(db->fp) != 0)
-        return SQLK_ERROR;
+    if (fseek(db->fp, 0, SEEK_SET) != 0) return SQLK_ERROR;
+    if (fwrite(&header, sizeof(sqlk_header_t), 1, db->fp) != 1) return SQLK_ERROR;
+    if (fflush(db->fp) != 0) return SQLK_ERROR;
 
     // Initialize the table page with a proper header
     char page_buffer[SQLK_PAGE_SIZE] = {0};
     sqlk_table_page_header_t *page_header = (sqlk_table_page_header_t *)page_buffer;
     page_header->row_count = 0;
 
-    if (fseek(db->fp, (long)pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0)
-        return SQLK_ERROR;
-    if (fwrite(page_buffer, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE)
-        return SQLK_ERROR;
-    if (fflush(db->fp) != 0)
-        return SQLK_ERROR;
+    if (fseek(db->fp, (long)pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0) return SQLK_ERROR;
+    if (fwrite(page_buffer, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE) return SQLK_ERROR;
+    if (fflush(db->fp) != 0) return SQLK_ERROR;
 
     return SQLK_OK;
 }
@@ -231,11 +220,9 @@ sqlk_status_t sqlk_insert_row(sqlk_db_t *db, const char *table, const sqlk_row_t
     }
 
     sqlk_header_t header;
-    if (fseek(db->fp, 0, SEEK_SET) != 0)
-        return SQLK_ERROR;
+    if (fseek(db->fp, 0, SEEK_SET) != 0) return SQLK_ERROR;
 
-    if (fread(&header, sizeof(sqlk_header_t), 1, db->fp) != 1)
-        return SQLK_ERROR;
+    if (fread(&header, sizeof(sqlk_header_t), 1, db->fp) != 1) return SQLK_ERROR;
 
     uint32_t root_pgno = 0;
     for (uint32_t i = 0; i < header.table_count; i++)
@@ -254,29 +241,23 @@ sqlk_status_t sqlk_insert_row(sqlk_db_t *db, const char *table, const sqlk_row_t
 
     // Read page
     char page[SQLK_PAGE_SIZE];
-    if (fseek(db->fp, (long)root_pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0)
-        return SQLK_ERROR;
-    if (fread(page, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE)
-        return SQLK_ERROR;
+    if (fseek(db->fp, (long)root_pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0) return SQLK_ERROR;
+    if (fread(page, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE) return SQLK_ERROR;
 
     sqlk_table_page_header_t *table_header = (sqlk_table_page_header_t *)page;
     sqlk_row_t *rows = (sqlk_row_t *)(page + sizeof(sqlk_table_page_header_t));
 
     // Check if there's space for a new row
     uint32_t max_rows = (SQLK_PAGE_SIZE - sizeof(sqlk_table_page_header_t)) / sizeof(sqlk_row_t);
-    if (table_header->row_count >= max_rows)
-        return SQLK_ERROR; // Page full
+    if (table_header->row_count >= max_rows) return SQLK_ERROR; // Page full
 
     // Append row
     rows[table_header->row_count] = *row;
     table_header->row_count++;
 
-    if (fseek(db->fp, (long)root_pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0)
-        return SQLK_ERROR;
-    if (fwrite(page, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE)
-        return SQLK_ERROR;
-    if (fflush(db->fp) != 0)
-        return SQLK_ERROR;
+    if (fseek(db->fp, (long)root_pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0) return SQLK_ERROR;
+    if (fwrite(page, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE) return SQLK_ERROR;
+    if (fflush(db->fp) != 0) return SQLK_ERROR;
 
     return SQLK_OK;
 }
@@ -289,10 +270,8 @@ sqlk_status_t sqlk_select_all(sqlk_db_t *db, const char *table)
     }
 
     sqlk_header_t header;
-    if (fseek(db->fp, 0, SEEK_SET) != 0)
-        return SQLK_ERROR;
-    if (fread(&header, sizeof(sqlk_header_t), 1, db->fp) != 1)
-        return SQLK_ERROR;
+    if (fseek(db->fp, 0, SEEK_SET) != 0) return SQLK_ERROR;
+    if (fread(&header, sizeof(sqlk_header_t), 1, db->fp) != 1) return SQLK_ERROR;
 
     uint32_t root_pgno = 0;
     for (uint32_t i = 0; i < header.table_count; i++)
@@ -310,10 +289,8 @@ sqlk_status_t sqlk_select_all(sqlk_db_t *db, const char *table)
     }
 
     char page[SQLK_PAGE_SIZE];
-    if (fseek(db->fp, (long)root_pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0)
-        return SQLK_ERROR;
-    if (fread(page, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE)
-        return SQLK_ERROR;
+    if (fseek(db->fp, (long)root_pgno * SQLK_PAGE_SIZE, SEEK_SET) != 0) return SQLK_ERROR;
+    if (fread(page, 1, SQLK_PAGE_SIZE, db->fp) != SQLK_PAGE_SIZE) return SQLK_ERROR;
 
     sqlk_table_page_header_t *table_header = (sqlk_table_page_header_t *)page;
     sqlk_row_t *rows = (sqlk_row_t *)(page + sizeof(sqlk_table_page_header_t));
@@ -331,8 +308,7 @@ sqlk_status_t sqlk_select_all(sqlk_db_t *db, const char *table)
 
 void sqlk_leaf_init(sqlk_page_t *page)
 {
-    if (!page)
-        return;
+    if (!page) return;
     memset(page->data, 0, SQLK_PAGE_SIZE);
 
     sqlk_leaf_header_t *header = (sqlk_leaf_header_t *)page->data;
@@ -346,17 +322,14 @@ void sqlk_leaf_init(sqlk_page_t *page)
 // Returns slot index or -1 on error
 int sqlk_leaf_insert_record(sqlk_page_t *page, const void *record, uint16_t size)
 {
-    if (!page || !record || size == 0)
-        return -1;
+    if (!page || !record || size == 0) return -1;
 
     sqlk_leaf_header_t *header = (sqlk_leaf_header_t *)page->data;
-    if (header->type != SQLK_PAGE_BTREE_LEAF)
-        return -1;
+    if (header->type != SQLK_PAGE_BTREE_LEAF) return -1;
 
     uint16_t record_bytes = (uint16_t)(2 + size);
     uint16_t need = (uint16_t)(record_bytes + sizeof(sqlk_slot_t));
-    if ((uint32_t)header->free_start + need > (uint32_t)header->free_end)
-        return -1; // Not enough space
+    if ((uint32_t)header->free_start + need > (uint32_t)header->free_end) return -1; // Not enough space
 
     uint16_t offset = header->free_start;
     memcpy(page->data + offset, &size, 2);
