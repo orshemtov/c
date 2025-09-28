@@ -27,6 +27,9 @@ ErrorCode mdb_index_open(MiniDB* db, const char* index_name, MDBIndex** out_idx)
 
 ErrorCode mdb_index_close(MDBIndex* idx);
 
+ErrorCode mdb_index_create(MiniDB* db, const char* index_name, const char* table_name, uint16_t col_idx, bool is_unique,
+                           MDBIndexType type);
+
 ErrorCode mdb_index_drop(MiniDB* db, const char* index_name);
 
 ErrorCode mdb_index_lookup_eq(MDBIndex* idx, MDBValue key, MDBRecord* out_records, uint32_t cap, uint32_t* out_count);

@@ -30,10 +30,14 @@ ErrorCode mdb_wal_open(MiniDB* db, MDBWal** out_wal);
 
 ErrorCode mdb_wal_close(MDBWal* wal);
 
-ErrorCode mdb_wal_append(MDBWal* wal, const MDBWalRecord* rec, const void* payload);
+ErrorCode mdb_wal_append(MDBWal* wal, const MDBWalRecord* record, const void* payload);
 
 ErrorCode mdb_wal_flush(MDBWal* wal);
 
 ErrorCode mdb_wal_replay(MiniDB* db, MDBWal* wal);
+
+ErrorCode mdb_recover(const char* filename, MiniDB** out_db);
+
+ErrorCode mdb_checkpoint(MiniDB* db);
 
 #endif

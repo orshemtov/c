@@ -60,8 +60,4 @@ ErrorCode mdb_header_write(MiniDB* db, const MDBHeader* header);
 
 ErrorCode mdb_header_check(const MDBHeader* header);
 
-ErrorCode mdb_recover(const char* filename, MiniDB** out_db);
-
-ErrorCode mdb_checkpoint(MiniDB* db);
-
 #endif
