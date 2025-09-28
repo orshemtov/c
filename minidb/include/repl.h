@@ -27,6 +27,10 @@ typedef enum
 
 typedef struct
 {
+    uint16_t col;
+    PredOp op;
+    MDBValue value;
+    bool has_pred;
 } WherePred;
 
 typedef struct

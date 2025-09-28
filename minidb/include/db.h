@@ -6,7 +6,6 @@
 
 #define MDB_MAGIC "MINIDB1"
 #define MDB_PAGE_SIZE 4096
-#define MDB_ENDIAN_LE 1
 #define MDB_VERSION 1
 
 #define MDB_TABLE_NAME_MAX 64
