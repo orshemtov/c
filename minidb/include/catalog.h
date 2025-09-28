@@ -7,7 +7,6 @@
 #include "pages.h"
 #include "row.h"
 #include <stdint.h>
-#include <stdlib.h>
 
 typedef struct MDBCatalog MDBCatalog;
 

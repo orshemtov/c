@@ -5,9 +5,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-typedef uint32_t MDBPageNumber;
-typedef uint16_t MDBSlotID;
-
 typedef enum
 {
     PG_METADATA = 0,

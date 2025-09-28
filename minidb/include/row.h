@@ -29,8 +29,6 @@ bool mdb_row_encode(const MDBValue* cols, uint16_t ncols, uint8_t* buffer, uint1
 
 bool mdb_row_decode(const uint8_t* buffer, uint16_t size, MDBValue* out_cols, uint16_t max_cols, uint16_t* out_ncols);
 
-// Helpers
-
 static inline MDBValue mdb_value_null(void)
 {
     MDBValue v = {.is_null = true, .type = COL_TYPE_INVALID};
