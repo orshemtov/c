@@ -41,7 +41,7 @@ typedef struct
 {
     MDBPageNumber page_num;
     MDBSlotID slot;
-} MDBTupleID;
+} MDBRecord;
 
 typedef struct
 {

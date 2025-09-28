@@ -29,9 +29,9 @@ ErrorCode mdb_index_close(MDBIndex* idx);
 
 ErrorCode mdb_index_drop(MiniDB* db, const char* index_name);
 
-ErrorCode mdb_index_lookup_eq(MDBIndex* idx, MDBValue key, MDBTupleID* out_tids, uint32_t cap, uint32_t* out_count);
+ErrorCode mdb_index_lookup_eq(MDBIndex* idx, MDBValue key, MDBRecord* out_records, uint32_t cap, uint32_t* out_count);
 
 ErrorCode mdb_index_lookup_range(MDBIndex* idx, const MDBValue* lower, bool lower_inclusive, const MDBValue* upper,
-                                 bool upper_inclusive, MDBTupleID* out_tids, uint32_t cap, uint32_t* out_count);
+                                 bool upper_inclusive, MDBRecord* out_records, uint32_t cap, uint32_t* out_count);
 
 #endif
