@@ -100,4 +100,21 @@ typedef struct
     };
 } Statement;
 
+/* Parsing */
+
+typedef struct
+{
+    char** items;
+    int count;
+    int pos;
+} Tokens;
+
+void tokenize(const char* line, Tokens* out_tokens);
+void free_tokens(Tokens* tokens);
+
+ErrorCode parse_statement(const Tokens* tokens, Statement* out_stmt);
+void free_statement(Statement* stmt);
+
+ErrorCode execute_statement(MiniDB* db, const Statement* stmt);
+
 #endif
