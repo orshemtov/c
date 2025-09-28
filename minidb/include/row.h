@@ -25,9 +25,11 @@ typedef struct
 
 uint16_t mdb_row_encoded_size(const MDBValue* cols, uint16_t ncols);
 
-bool mdb_row_encode(const MDBValue* cols, uint16_t ncols, uint8_t* buffer, uint16_t cap, uint16_t* out_size);
+bool mdb_row_encode(const MDBValue* cols, uint16_t ncols, uint8_t* buffer,
+                    uint16_t cap, uint16_t* out_size);
 
-bool mdb_row_decode(const uint8_t* buffer, uint16_t size, MDBValue* out_cols, uint16_t max_cols, uint16_t* out_ncols);
+bool mdb_row_decode(const uint8_t* buffer, uint16_t size, MDBValue* out_cols,
+                    uint16_t max_cols, uint16_t* out_ncols);
 
 static inline MDBValue mdb_value_null(void)
 {

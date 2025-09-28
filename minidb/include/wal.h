@@ -30,7 +30,8 @@ ErrorCode mdb_wal_open(MiniDB* db, MDBWal** out_wal);
 
 ErrorCode mdb_wal_close(MDBWal* wal);
 
-ErrorCode mdb_wal_append(MDBWal* wal, const MDBWalRecord* record, const void* payload);
+ErrorCode mdb_wal_append(MDBWal* wal, const MDBWalRecord* record,
+                         const void* payload);
 
 ErrorCode mdb_wal_flush(MDBWal* wal);
 

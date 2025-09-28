@@ -67,3 +67,6 @@ clean:
 
 run: $(TARGET)
 	./$(TARGET)
+
+format:
+	clang-format -i $(SRC) $(TEST_SRC) include/*.h

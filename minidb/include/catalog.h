@@ -38,24 +38,32 @@ ErrorCode mdb_catalog_open(MiniDB* db, MDBCatalog** out_catalog);
 
 ErrorCode mdb_catalog_close(MDBCatalog* catalog);
 
-ErrorCode mdb_catalog_create_table(MDBCatalog* catalog, const char* table_name, const MDBCatalogColumn* cols,
-                                   uint16_t ncols, MDBPageNumber heap_root);
+ErrorCode mdb_catalog_create_table(MDBCatalog* catalog, const char* table_name,
+                                   const MDBCatalogColumn* cols, uint16_t ncols,
+                                   MDBPageNumber heap_root);
 
 ErrorCode mdb_catalog_drop_table(MDBCatalog* catalog, const char* table_name);
 
-ErrorCode mdb_catalog_list_tables(MDBCatalog* catalog, MDBCatalogTableMetadata** out_array, uint32_t* out_count);
+ErrorCode mdb_catalog_list_tables(MDBCatalog* catalog,
+                                  MDBCatalogTableMetadata** out_array,
+                                  uint32_t* out_count);
 
-ErrorCode mdb_catalog_get(MDBCatalog* catalog, const char* table_name, MDBCatalogTableMetadata* out_metadata);
+ErrorCode mdb_catalog_get(MDBCatalog* catalog, const char* table_name,
+                          MDBCatalogTableMetadata* out_metadata);
 
-ErrorCode mdb_catalog_alloc_row_id(MDBCatalog* catalog, const char* table_name, MDBRowID* out_row_id);
+ErrorCode mdb_catalog_alloc_row_id(MDBCatalog* catalog, const char* table_name,
+                                   MDBRowID* out_row_id);
 
-ErrorCode mdb_catalog_add_index(MDBCatalog* catalog, const MDBCatalogIndexMetadata* meta);
+ErrorCode mdb_catalog_add_index(MDBCatalog* catalog,
+                                const MDBCatalogIndexMetadata* meta);
 
 ErrorCode mdb_catalog_drop_index(MDBCatalog* catalog, const char* index_name);
 
-ErrorCode mdb_catalog_get_index(MDBCatalog* catalog, const char* index_name, MDBCatalogIndexMetadata* out_meta);
+ErrorCode mdb_catalog_get_index(MDBCatalog* catalog, const char* index_name,
+                                MDBCatalogIndexMetadata* out_meta);
 
-ErrorCode mdb_catalog_list_indexes(MDBCatalog* catalog, const char* table_name, MDBCatalogIndexMetadata** out_array,
+ErrorCode mdb_catalog_list_indexes(MDBCatalog* catalog, const char* table_name,
+                                   MDBCatalogIndexMetadata** out_array,
                                    uint32_t* out_count);
 
 #endif

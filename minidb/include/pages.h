@@ -37,8 +37,10 @@ static inline void mdb_page_init(MDBPage* page, MDBPageType type)
 
 ErrorCode mdb_page_read(MiniDB* db, MDBPageNumber page_num, MDBPage* out_page);
 
-ErrorCode mdb_page_write(MiniDB* db, MDBPageNumber page_num, const MDBPage* page);
+ErrorCode mdb_page_write(MiniDB* db, MDBPageNumber page_num,
+                         const MDBPage* page);
 
-ErrorCode mdb_page_allocate(MiniDB* db, const MDBPage* page, MDBPageNumber* out_page_num);
+ErrorCode mdb_page_allocate(MiniDB* db, const MDBPage* page,
+                            MDBPageNumber* out_page_num);
 
 #endif

@@ -33,18 +33,21 @@ uint16_t mdb_heap_page_free_space(const MDBPage* page);
 
 bool mdb_heap_page_has_space(const MDBPage* page, uint16_t size);
 
-ErrorCode mdb_heap_page_insert(MDBPage* page, const uint8_t* record, uint16_t size, MDBSlotID* out_slot);
+ErrorCode mdb_heap_page_insert(MDBPage* page, const uint8_t* record,
+                               uint16_t size, MDBSlotID* out_slot);
 
 ErrorCode mdb_heap_page_delete(MDBPage* page, MDBSlotID slot);
 
-ErrorCode mdb_heap_page_get(const MDBPage* page, MDBSlotID slot, const uint8_t** out_record, uint16_t* out_size);
+ErrorCode mdb_heap_page_get(const MDBPage* page, MDBSlotID slot,
+                            const uint8_t** out_record, uint16_t* out_size);
 
 static inline void mdb_heap_iter_init(MDBHeapIter* it)
 {
     it->next_slot = 0;
 }
 
-bool mdb_heap_page_iter_next(const MDBPage* page, MDBHeapIter* it, MDBSlotID* out_slot, const uint8_t** out_record,
+bool mdb_heap_page_iter_next(const MDBPage* page, MDBHeapIter* it,
+                             MDBSlotID* out_slot, const uint8_t** out_record,
                              uint16_t* out_size);
 
 #endif
