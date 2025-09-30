@@ -3,10 +3,10 @@
         "stdio.h": "c",
         "stdlib.h": "c",
         "unity.h": "c",
-        "forward_list": "cpp",
-        "list": "cpp",
-        "chrono": "cpp",
-        "__locale": "cpp",
-        "readline.h": "c"
+        "readline.h": "c",
+        "cstdlib": "c",
+        "repl.h": "c",
+        "errors.h": "c",
+        "db.h": "c"
     }
 }
