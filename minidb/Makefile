@@ -41,7 +41,7 @@ all: $(TARGET)
 $(TARGET): $(OBJ) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $^
 
-# Tests
+# Tests - run all test files
 test: $(TEST_TARGET)
 	./$(TEST_TARGET)
 

@@ -2,17 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void setUp(void)
+// Placeholder for future database tests (non-REPL related)
+void test_placeholder(void)
 {
-}
-
-void tearDown(void)
-{
-}
-
-int main(void)
-{
-    UNITY_BEGIN();
-
-    return UNITY_END();
+    TEST_ASSERT_EQUAL(1, 1);
 }

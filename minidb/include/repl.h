@@ -3,6 +3,7 @@
 
 #include "db.h"
 #include "row.h"
+#include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
 
@@ -117,47 +118,5 @@ ErrorCode parse_statement(const Tokens* tokens, Statement* out_stmt);
 void free_statement(Statement* stmt);
 
 ErrorCode execute_statement(MiniDB* db, const Statement* stmt);
-
-/* Helpers */
-static const char* tokens_peek(const Tokens* tokens)
-{
-    if (tokens->pos < tokens->count)
-    {
-        return tokens->items[tokens->pos];
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-static const char* tokens_next(Tokens* tokens)
-{
-    if (tokens->pos < tokens->count)
-    {
-        return tokens->items[tokens->pos++];
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-static int tokens_ieq(const char* a, const char* b)
-{
-    if (!a || !b) return 1;
-
-    while (*a && *b)
-    {
-        if (tolower((unsigned char)*a) != tolower((unsigned char)*b))
-        {
-            return 1;
-        }
-        a++;
-        b++;
-    }
-
-    return (*a == 0 && *b == 0) ? 0 : 1;
-}
 
 #endif
