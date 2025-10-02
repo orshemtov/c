@@ -1,0 +1,1 @@
+int parse_file_into_function(const char* filename, FunctionDef* func);

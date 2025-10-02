@@ -1,9 +1,9 @@
 #include "ast.h"
-#include "ast_parser.h"
+#include "parser.h"
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
@@ -11,8 +11,8 @@ int main(int argc, char* argv[])
         return EXIT_FAILURE;
     }
 
-    const char* path = argv[1];
-    const char* function_name = argv[2];
+    const char *path = argv[1];
+    const char *function_name = argv[2];
 
     FunctionDef func = {0};
     ast_function_init(&func, function_name, NULL, 0, NULL);

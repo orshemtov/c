@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://json.schemastore.org/clang-format.json
+BasedOnStyle: Microsoft
+AllowShortIfStatementsOnASingleLine: AllIfsAndElse
+DerivePointerAlignment: false
+PointerAlignment: Left
+ColumnLimit: 0
+IndentWidth: 4
+TabWidth: 4
