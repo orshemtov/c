@@ -3,6 +3,7 @@
 
 #include "errors.h"
 #include <stdint.h>
+#include <stdio.h>
 
 #define MDB_MAGIC "MINIDB1"
 #define MDB_PAGE_SIZE 4096
@@ -54,10 +55,8 @@ ErrorCode mdb_open(const char* filename, MiniDB** out_db);
 
 ErrorCode mdb_close(MiniDB* db);
 
-ErrorCode mdb_header_read(MiniDB* db, MDBHeader* out_header);
+ErrorCode mdb_header_write(FILE* fp);
 
-ErrorCode mdb_header_write(MiniDB* db, const MDBHeader* header);
-
-ErrorCode mdb_header_check(const MDBHeader* header);
+ErrorCode mdb_header_check(FILE* fp);
 
 #endif

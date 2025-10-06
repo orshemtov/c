@@ -1,0 +1,2 @@
+-Iinclude -Isrc -Ivendor
+-Wall -Wextra -Werror

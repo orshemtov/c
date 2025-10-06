@@ -3,7 +3,7 @@
 
 typedef enum
 {
-    ERR_OK = 0,
+    OK = 0,
     ERR_UNKNOWN,
     ERR_IO,
     ERR_UNSUPPORTED_FORMAT,
