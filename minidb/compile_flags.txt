@@ -1,2 +1,4 @@
 -Iinclude -Isrc -Ivendor
 -Wall -Wextra -Werror
+-std=c17
+-g

@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 
     MiniDB* db = NULL;
     ErrorCode err = mdb_open(path, &db);
-    if (err != ERR_OK)
+    if (err != OK)
     {
         fprintf(stderr, "Failed to open database: %d\n", err);
         return EXIT_FAILURE;
@@ -33,7 +33,7 @@ int main(int argc, char** argv)
 
         Statement stmt;
         ErrorCode perr = parse_statement(&tokens, &stmt);
-        if (perr != ERR_OK)
+        if (perr != OK)
         {
             printf("Parse error: %d\n", perr);
             free(line);
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
         }
 
         ErrorCode rerr = execute_statement(db, &stmt);
-        if (rerr != ERR_OK)
+        if (rerr != OK)
         {
             printf("Execution error: %d\n", rerr);
             free(line);
