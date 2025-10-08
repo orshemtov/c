@@ -2,7 +2,6 @@
 #define INDEX_H
 
 #include "db.h"
-#include "pages.h"
 #include "row.h"
 #include <stdbool.h>
 

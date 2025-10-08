@@ -4,8 +4,6 @@
 #include "db.h"
 #include "errors.h"
 #include "index.h"
-#include "pages.h"
-#include "row.h"
 #include <stdint.h>
 
 typedef struct MDBCatalog MDBCatalog;
