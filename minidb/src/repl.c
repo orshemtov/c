@@ -1,73 +1,9 @@
-/*
- * =============================================================================
- * MiniDB REPL (Read-Eval-Print Loop) Implementation
- * =============================================================================
- *
- * This file implements the SQL parsing and execution engine for MiniDB.
- * It takes text SQL commands and converts them into structured data that
- * can be executed by the database engine.
- *
- * ARCHITECTURE OVERVIEW:
- *
- * 1. TOKENIZATION (tokenize function):
- *    - Breaks SQL text into individual tokens
- *    - Handles punctuation, quoted strings, and whitespace
- *    - Example: "CREATE TABLE users (id INT)" -> ["CREATE", "TABLE", "users", "(", "id", "INT", ")"]
- *
- * 2. PARSING (parse_statement function):
- *    - Analyzes token sequences to understand SQL structure
- *    - Converts tokens into Statement structures
- *    - Validates SQL syntax and reports errors
- *
- * 3. EXECUTION (execute_statement function):
- *    - Takes parsed statements and performs database operations
- *    - Currently a placeholder that prints what would be done
- *    - Will eventually interface with storage engine, catalog, etc.
- *
- * 4. MEMORY MANAGEMENT:
- *    - Proper cleanup of all allocated strings and structures
- *    - Prevents memory leaks in long-running REPL sessions
- *
- * SUPPORTED SQL SUBSET:
- *
- * Data Definition Language (DDL):
- *   CREATE TABLE name (col1 type1, col2 type2, ...)
- *   DROP TABLE name
- *   CREATE INDEX name ON table (column_index)
- *   DROP INDEX name
- *
- * Data Manipulation Language (DML):
- *   INSERT INTO table VALUES (val1, val2, ...)
- *   SELECT * FROM table [WHERE col = value]
- *   UPDATE table SET col = value [WHERE col = value]
- *   DELETE FROM table [WHERE col = value]
- *
- * Meta Commands:
- *   LIST TABLES
- *   HELP
- *   EXIT / QUIT
- *
- * DESIGN DECISIONS:
- *
- * - Column references use indices (0, 1, 2...) instead of names for simplicity
- * - Only equality predicates (=) in WHERE clauses for now
- * - Case-insensitive SQL keywords but case-preserving for identifiers
- * - Memory safety with proper cleanup and error handling
- * - Modular design with separate functions for each statement type
- */
-
 #include "repl.h"
 #include "errors.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-/*
- * =============================================================================
- * HELPER FUNCTIONS FOR TOKEN MANIPULATION
- * =============================================================================
- */
 
 /**
  * Look at the current token without consuming it.
@@ -135,12 +71,6 @@ static void add_token(Tokens* tokens, const char* token)
 
     tokens->count++;
 }
-
-/*
- * =============================================================================
- * TOKENIZATION FUNCTIONS
- * =============================================================================
- */
 
 /**
  * Break down a SQL command line into individual tokens.
@@ -279,12 +209,6 @@ void free_tokens(Tokens* tokens)
     tokens->pos = 0;
 }
 
-/*
- * =============================================================================
- * PARSING HELPER FUNCTIONS
- * =============================================================================
- */
-
 /**
  * Parse an optional WHERE clause.
  *
@@ -373,7 +297,7 @@ static ErrorCode parse_where_clause(Tokens* t, WherePred* where)
         where->has_pred = true;
     }
 
-    return ERR_OK;
+    return OK;
 }
 
 /**
@@ -455,17 +379,10 @@ static ErrorCode parse_column_definitions(Tokens* t, MDBColumnDef* cols, uint16_
         return ERR_PARSE;
     }
 
-    return ERR_OK;
+    return OK;
 }
 
-/*
- * =============================================================================
- * MAIN STATEMENT PARSING FUNCTION
- * =============================================================================
- */
-
 /**
- * Parse a complete SQL statement from tokens.
  *
  * This is the main entry point for parsing. It examines the first token
  * to determine the statement type and then delegates to specific parsing
@@ -582,7 +499,7 @@ ErrorCode parse_statement(const Tokens* tokens, Statement* out_stmt)
             out_stmt->create_index.col_idx = (uint16_t)col_idx;
             out_stmt->create_index.is_unique = false; // Default to non-unique
 
-            return ERR_OK;
+            return OK;
         }
         else
         {
@@ -612,7 +529,7 @@ ErrorCode parse_statement(const Tokens* tokens, Statement* out_stmt)
 
             out_stmt->kind = STMT_DROP_TABLE;
             out_stmt->drop_table.name = strdup(name);
-            return ERR_OK;
+            return OK;
         }
         else if (tokens_ieq(second, "INDEX") == 0)
         {
@@ -625,7 +542,7 @@ ErrorCode parse_statement(const Tokens* tokens, Statement* out_stmt)
 
             out_stmt->kind = STMT_DROP_INDEX;
             out_stmt->drop_index.name = strdup(name);
-            return ERR_OK;
+            return OK;
         }
         else
         {
@@ -712,7 +629,7 @@ ErrorCode parse_statement(const Tokens* tokens, Statement* out_stmt)
         // Consume closing parenthesis
         if (!tokens_next(&t)) return ERR_PARSE;
 
-        return ERR_OK;
+        return OK;
     }
     else if (tokens_ieq(first, "SELECT") == 0)
     {
@@ -823,29 +740,23 @@ ErrorCode parse_statement(const Tokens* tokens, Statement* out_stmt)
         if (!second || tokens_ieq(second, "TABLES") != 0) return ERR_PARSE;
 
         out_stmt->kind = STMT_LIST_TABLES;
-        return ERR_OK;
+        return OK;
     }
     else if (tokens_ieq(first, "HELP") == 0)
     {
         out_stmt->kind = STMT_HELP;
-        return ERR_OK;
+        return OK;
     }
     else if (tokens_ieq(first, "EXIT") == 0 || tokens_ieq(first, "QUIT") == 0)
     {
         out_stmt->kind = STMT_EXIT;
-        return ERR_OK;
+        return OK;
     }
     else
     {
         return ERR_UNSUPPORTED;
     }
 }
-
-/*
- * =============================================================================
- * MEMORY MANAGEMENT FUNCTIONS
- * =============================================================================
- */
 
 /**
  * Free all dynamically allocated memory in a Statement.
@@ -940,12 +851,6 @@ void free_statement(Statement* stmt)
         break;
     }
 }
-
-/*
- * =============================================================================
- * STATEMENT EXECUTION FUNCTIONS
- * =============================================================================
- */
 
 /**
  * Execute a parsed SQL statement.
@@ -1062,5 +967,5 @@ ErrorCode execute_statement(MiniDB* db, const Statement* stmt)
         return ERR_UNSUPPORTED;
     }
 
-    return ERR_OK;
+    return OK;
 }

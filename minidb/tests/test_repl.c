@@ -15,7 +15,7 @@ void test_parse_create_table_simple(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_CREATE_TABLE, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.create_table.name);
     TEST_ASSERT_EQUAL(2, stmt.create_table.ncols);
@@ -40,7 +40,7 @@ void test_parse_create_table_multiple_columns(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_CREATE_TABLE, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("products", stmt.create_table.name);
     TEST_ASSERT_EQUAL(4, stmt.create_table.ncols);
@@ -71,7 +71,7 @@ void test_parse_drop_table(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_DROP_TABLE, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.drop_table.name);
 
@@ -89,7 +89,7 @@ void test_parse_create_index(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_CREATE_INDEX, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("idx_name", stmt.create_index.name);
     TEST_ASSERT_EQUAL_STRING("users", stmt.create_index.table_name);
@@ -110,7 +110,7 @@ void test_parse_drop_index(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_DROP_INDEX, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("idx_name", stmt.drop_index.name);
 
@@ -128,7 +128,7 @@ void test_parse_insert_integers(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_INSERT, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.insert_.table_name);
     TEST_ASSERT_EQUAL(3, stmt.insert_.nvalues);
@@ -159,7 +159,7 @@ void test_parse_insert_mixed_types(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_INSERT, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.insert_.table_name);
     TEST_ASSERT_EQUAL(3, stmt.insert_.nvalues);
@@ -191,7 +191,7 @@ void test_parse_insert_text_only(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_INSERT, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("messages", stmt.insert_.table_name);
     TEST_ASSERT_EQUAL(3, stmt.insert_.nvalues);
@@ -222,7 +222,7 @@ void test_parse_select_simple(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_SELECT, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.select_.table_name);
     TEST_ASSERT_EQUAL(false, stmt.select_.where.has_pred);
@@ -241,7 +241,7 @@ void test_parse_select_with_where_int(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_SELECT, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.select_.table_name);
     TEST_ASSERT_EQUAL(true, stmt.select_.where.has_pred);
@@ -265,7 +265,7 @@ void test_parse_select_with_where_text(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_SELECT, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.select_.table_name);
     TEST_ASSERT_EQUAL(true, stmt.select_.where.has_pred);
@@ -289,7 +289,7 @@ void test_parse_update_simple(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_UPDATE, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.update_.table_name);
     TEST_ASSERT_EQUAL(1, stmt.update_.nvalues);
@@ -313,7 +313,7 @@ void test_parse_update_with_where(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_UPDATE, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.update_.table_name);
     TEST_ASSERT_EQUAL(2, stmt.update_.nvalues);
@@ -350,7 +350,7 @@ void test_parse_delete_simple(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_DELETE, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.delete_.table_name);
     TEST_ASSERT_EQUAL(false, stmt.delete_.where.has_pred);
@@ -369,7 +369,7 @@ void test_parse_delete_with_where(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_DELETE, stmt.kind);
     TEST_ASSERT_EQUAL_STRING("users", stmt.delete_.table_name);
     TEST_ASSERT_EQUAL(true, stmt.delete_.where.has_pred);
@@ -393,7 +393,7 @@ void test_parse_list_tables(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_LIST_TABLES, stmt.kind);
 
     free_statement(&stmt);
@@ -410,7 +410,7 @@ void test_parse_help(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_HELP, stmt.kind);
 
     free_statement(&stmt);
@@ -427,7 +427,7 @@ void test_parse_exit(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_EXIT, stmt.kind);
 
     free_statement(&stmt);
@@ -444,7 +444,7 @@ void test_parse_quit(void)
     Statement stmt;
     ErrorCode err = parse_statement(&tokens, &stmt);
 
-    TEST_ASSERT_EQUAL(ERR_OK, err);
+    TEST_ASSERT_EQUAL(OK, err);
     TEST_ASSERT_EQUAL(STMT_EXIT, stmt.kind);
 
     free_statement(&stmt);
@@ -469,7 +469,7 @@ void test_parse_case_insensitive(void)
         Statement stmt;
         ErrorCode err = parse_statement(&tokens, &stmt);
 
-        TEST_ASSERT_EQUAL_MESSAGE(ERR_OK, err, commands[i]);
+        TEST_ASSERT_EQUAL_MESSAGE(OK, err, commands[i]);
 
         if (i < 3)
         {
@@ -512,7 +512,7 @@ void test_parse_invalid_statements(void)
         Statement stmt;
         ErrorCode err = parse_statement(&tokens, &stmt);
 
-        TEST_ASSERT_NOT_EQUAL_MESSAGE(ERR_OK, err, invalid_commands[i]);
+        TEST_ASSERT_NOT_EQUAL_MESSAGE(OK, err, invalid_commands[i]);
 
         free_tokens(&tokens);
         // Don't free statement on parse error

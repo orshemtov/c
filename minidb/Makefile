@@ -6,7 +6,8 @@ CFLAGS = \
 	-std=c17 \
 	-g \
 	-Iinclude \
-	-Ivendor
+	-Ivendor \
+	-lreadline
 
 SRC_DIR = src
 TEST_DIR = tests
